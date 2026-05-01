@@ -1,7 +1,11 @@
 import com.openai.client.OpenAIClient;
 import com.openai.client.okhttp.OpenAIOkHttpClient;
+import com.openai.core.JsonValue;
+import com.openai.models.FunctionDefinition;
+import com.openai.models.FunctionParameters;
 import com.openai.models.chat.completions.ChatCompletion;
 import com.openai.models.chat.completions.ChatCompletionCreateParams;
+import com.openai.models.chat.completions.ChatCompletionTool;
 
 public class Main {
     public static void main(String[] args) {
@@ -31,6 +35,15 @@ public class Main {
                 ChatCompletionCreateParams.builder()
                         .model("anthropic/claude-haiku-4.5")
                         .addUserMessage(prompt)
+                        .addTool(ChatCompletionTool.builder()
+                                .function(FunctionDefinition.builder()
+                                        .name("Read")
+                                        .description("Read and return the contents of a file")
+                                        .parameters(FunctionParameters.builder()
+                                                .putAdditionalProperty("file_path", JsonValue.from(new ParameterProperty("string", "The path to the file to read")))
+                                                .build())
+                                        .build())
+                                .build())
                         .build()
         );
 
@@ -45,3 +58,5 @@ public class Main {
         System.out.print(response.choices().get(0).message().content().orElse(""));
     }
 }
+
+record ParameterProperty(String type, String description) {}
